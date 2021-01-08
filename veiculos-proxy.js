@@ -223,8 +223,8 @@ const veiculosResDecorator = (opts) => {
         logger.info(`Response body: ${data} - status: ${proxyRes.statusCode}`)
         
         if (userRes.statusCode === 201) {
-            resBody = parseVeiculoResponseBody(JSON.parse(data));
-            userRes.header('veiculo-id', resBody.id)
+            const veiculo = parseVeiculoResponseBody(JSON.parse(data));
+            userRes.header('veiculo-id', veiculo.id)
         } else if (userRes.statusCode === 200 && data.length) {
             if (proxyRes.statusCode >= 200 && proxyRes.statusCode < 400) {
                 const json = JSON.parse(data);
