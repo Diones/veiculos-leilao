@@ -132,7 +132,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/veiculos?sortFieldDataLance=desc&usuarioLance=devacar",
+					"raw": "http://localhost:3000/veiculos",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -149,12 +149,12 @@
 						},
 						{
 							"key": "lote",
-							"value": "0181",
+							"value": "9999",
 							"disabled": true
 						},
 						{
 							"key": "anoFabricacao",
-							"value": "2012",
+							"value": "2004",
 							"disabled": true
 						},
 						{
@@ -164,21 +164,28 @@
 						},
 						{
 							"key": "inicioAnoFabricacao",
-							"value": "2015",
+							"value": "2002",
 							"disabled": true
 						},
 						{
 							"key": "fimAnoFabricacao",
-							"value": "2016",
+							"value": "2002",
 							"disabled": true
 						},
 						{
 							"key": "sortFieldDataLance",
-							"value": "desc"
+							"value": "asc",
+							"disabled": true
 						},
 						{
 							"key": "usuarioLance",
-							"value": "devacar"
+							"value": "devacar",
+							"disabled": true
+						},
+						{
+							"key": "modelo",
+							"value": "HIL",
+							"disabled": true
 						}
 					]
 				}

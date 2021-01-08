@@ -155,17 +155,23 @@ const applyFilter = (resBody, userReq, filterOpts, filterFields) => {
             logger.info(`Filtering by fields: ${filterFields}`);
             const inicioAnoFabricacaoRegex = /^inicioAnoFabricacao$/
             const fimAnoFabricacaoRegex = /^fimAnoFabricacao$/
+            const modeloRegex = /^modelo$/
             filterFields.forEach(qParam => {
                 let filter;
                 if (qParam.match(inicioAnoFabricacaoRegex) || qParam.match(fimAnoFabricacaoRegex)) {
                     const qParamFormatted = qParam.replace(/(inicio|fim)(.)(.+)/, (g1, g2, g3, g4) => g3.toLowerCase() + g4)
                     if (qParam.match(inicioAnoFabricacaoRegex)) {
-                        filter = (veiculo => veiculo[qParamFormatted] >= qParams[qParam]);
+                        filter = (veiculo => !qParams[qParam] || veiculo[qParamFormatted] >= qParams[qParam]);
                     } else {
-                        filter = (veiculo => veiculo[qParamFormatted] <= qParams[qParam]);
+                        filter = (veiculo => !qParams[qParam] || veiculo[qParamFormatted] <= qParams[qParam]);
                     }
                 } else {
-                    filter = (veiculo => veiculo[qParam] == qParams[qParam]);
+                    if (qParam.match(modeloRegex)) {
+
+                        filter = (veiculo => !qParams[qParam] || (veiculo[qParam] && veiculo[qParam].startsWith(qParams[qParam])));
+                    } else {
+                        filter = (veiculo => !qParams[qParam] || veiculo[qParam] == qParams[qParam]);
+                    }
                 }
                 filteredResBody = filteredResBody.filter(filter);
             });
@@ -194,35 +200,57 @@ const applySorting = (resBody, userReq, sortField) => {
 
 const veiculosResDecorator = (opts) => {
     return (proxyRes, proxyResData, userReq, userRes) => {
+        let resBody = '';
+
+        switch (userReq.method) {
+            case 'GET':
+                userRes.status(200);
+                break;
+            case 'POST':
+                userRes.status(201);
+                break;
+            case 'PUT':
+                userRes.status(204);
+                break;
+            case 'DELETE':
+                userRes.status(204);
+                break;
+            default:
+                throw ErrorCode.METHOD_NOT_SUPPORTED;
+        }
+
         const data = proxyResData.toString('utf8');
         logger.info(`Response body: ${data} - status: ${proxyRes.statusCode}`)
-        let resBody = '';
-        if (data.length) {
+        
+        if (userRes.statusCode === 201) {
+            resBody = parseVeiculoResponseBody(JSON.parse(data));
+            userRes.header('veiculo-id', resBody.id)
+        } else if (userRes.statusCode === 200 && data.length) {
             if (proxyRes.statusCode >= 200 && proxyRes.statusCode < 400) {
                 const json = JSON.parse(data);
                 if (Array.isArray(json)) {
-                    resBody = json.map(veiculo => parseVeiculoResponseBody(veiculo))
+                    resBody = json.map(veiculo => parseVeiculoResponseBody(veiculo));
                 } else {
-                    resBody = parseVeiculoResponseBody(json)
+                    resBody = parseVeiculoResponseBody(json);
+                }
+
+                if (resBody.length && opts) {
+                    const sortFieldRegex = /^sortFieldDataLance$/;
+                    const filterFields = Object.keys(userReq.query).filter(qParam => !qParam.match(sortFieldRegex));
+                    const sortField = Object.keys(userReq.query).find(qParam => qParam.match(sortFieldRegex));
+
+                    logger.info(`Proxy opts: ${JSON.stringify(opts)}`);
+
+                    if (opts.filter) {
+                        resBody = applyFilter(resBody, userReq, opts.filter, filterFields);
+                    }
+
+                    if (opts.sorting) {
+                        resBody = applySorting(resBody, userReq, sortField);
+                    }
                 }
             } else {
                 resBody = data;
-            }
-
-            if (opts) {
-                const sortFieldRegex = /^sortFieldDataLance$/;
-                const filterFields = Object.keys(userReq.query).filter(qParam => !qParam.match(sortFieldRegex));
-                const sortField = Object.keys(userReq.query).find(qParam => qParam.match(sortFieldRegex));
-
-                logger.info(`Proxy opts: ${JSON.stringify(opts)}`);
-
-                if(opts.filter) {
-                    resBody = applyFilter(resBody, userReq, opts.filter, filterFields)
-                }
-
-                if (opts.sorting) {
-                    resBody = applySorting(resBody, userReq, sortField)
-                }
             }
         }
         return resBody;
