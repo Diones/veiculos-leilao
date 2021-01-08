@@ -1,6 +1,6 @@
 # REST API - Leilões Veículo Proxy
 Projeto para exercitar conhecimentos de desenvolvimento utilizando design RESTful.
-O objetivo do projeto é criar uma camada de abstração sobre uma API mal desenhada e definir os contratos que serão utilizados em um desenvolvimento futuro.
+O objetivo do projeto é criar uma camada de abstração sobre uma API fora dos padrões REST e definir os contratos que serão utilizados em um desenvolvimento futuro.
 
 ### Requisitos
 * Node
