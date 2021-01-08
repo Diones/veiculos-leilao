@@ -1,0 +1,220 @@
+{
+	"info": {
+		"_postman_id": "891a162a-b899-4921-aca9-3a137b0848bc",
+		"name": "Leilão Veiculos",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Criar lance",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"dataLance\", new Date().toISOString());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"dataLance\": \"{{dataLance}}\",\n    \"lote\": \"0196\",\n    \"codigoControle\": \"56248\",\n    \"marca\": \"RENAULT\",\n    \"modelo\": \"CLIO 16VS\",\n    \"anoFabricacao\": 2007,\n    \"anoModelo\": 2007,\n    \"valorLance\": 15000,\n    \"usuarioLance\": \"-\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/veiculos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"veiculos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Alterar lance",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"dataLance\", new Date().toISOString());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"dataLance\": \"{{dataLance}}\",\n    \"lote\": \"0196\",\n    \"codigoControle\": \"56248\",\n    \"marca\": \"RENAULT\",\n    \"modelo\": \"CLIO 16VS\",\n    \"anoFabricacao\": 2007,\n    \"anoModelo\": 2007,\n    \"valorLance\": 15000,\n    \"usuarioLance\": \"-\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/veiculos/555",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"veiculos",
+						"555"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remover lance",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/veiculos/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"veiculos",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar lance com filtro e ordenação",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/veiculos?sortFieldDataLance=desc&usuarioLance=devacar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"veiculos"
+					],
+					"query": [
+						{
+							"key": "marca",
+							"value": "FIAT",
+							"disabled": true
+						},
+						{
+							"key": "lote",
+							"value": "0181",
+							"disabled": true
+						},
+						{
+							"key": "anoFabricacao",
+							"value": "2012",
+							"disabled": true
+						},
+						{
+							"key": "anoModelo",
+							"value": "2013",
+							"disabled": true
+						},
+						{
+							"key": "inicioAnoFabricacao",
+							"value": "2015",
+							"disabled": true
+						},
+						{
+							"key": "fimAnoFabricacao",
+							"value": "2016",
+							"disabled": true
+						},
+						{
+							"key": "sortFieldDataLance",
+							"value": "desc"
+						},
+						{
+							"key": "usuarioLance",
+							"value": "devacar"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar lance por ID",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/veiculos/555",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"veiculos",
+						"555"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
