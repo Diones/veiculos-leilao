@@ -139,6 +139,59 @@ const veiculosReqOptDecorator = (proxyReqOpts, srcReq) => {
     return proxyReqOpts;
 }
 
+const applyFilter = (resBody, userReq, filterOpts, filterFields) => {
+    let filteredResBody = resBody;
+    const qParams = userReq.query;
+    if (filterOpts === FilterOpts.BY_ID) {
+        let veiculoId = extractVeiculoIdFromUrl(userReq);
+        logger.info(`Filtering by id: ${veiculoId}`)
+
+        filteredResBody = filteredResBody.find(veiculo => veiculo.id === veiculoId)
+        if (!filteredResBody) {
+            throw ErrorCode.VEHICLE_NOT_FOUND;
+        }
+    } else if (filterOpts === FilterOpts.QUERY_PARAM) {
+        if (filterFields) {
+            logger.info(`Filtering by fields: ${filterFields}`);
+            const inicioAnoFabricacaoRegex = /^inicioAnoFabricacao$/
+            const fimAnoFabricacaoRegex = /^fimAnoFabricacao$/
+            filterFields.forEach(qParam => {
+                let filter;
+                if (qParam.match(inicioAnoFabricacaoRegex) || qParam.match(fimAnoFabricacaoRegex)) {
+                    const qParamFormatted = qParam.replace(/(inicio|fim)(.)(.+)/, (g1, g2, g3, g4) => g3.toLowerCase() + g4)
+                    if (qParam.match(inicioAnoFabricacaoRegex)) {
+                        filter = (veiculo => veiculo[qParamFormatted] >= qParams[qParam]);
+                    } else {
+                        filter = (veiculo => veiculo[qParamFormatted] <= qParams[qParam]);
+                    }
+                } else {
+                    filter = (veiculo => veiculo[qParam] == qParams[qParam]);
+                }
+                filteredResBody = filteredResBody.filter(filter);
+            });
+        }
+    }
+    return filteredResBody;
+}
+
+const applySorting = (resBody, userReq, sortField) => {
+    const qParams = userReq.query;
+    if (sortField) {
+        logger.info(`Sorting by field: ${sortField}`);
+        const qParamFormatted = sortField.replace(/(sortField)(.)(.+)/, (g1, g2, g3, g4) => g3.toLowerCase() + g4)
+        let sorting;
+        if (qParams[sortField] == SortingOpts.ASC) {
+            sorting = (a, b) => { return moment(a[qParamFormatted]).isAfter(b[qParamFormatted]) ? 1 : -1 };
+        } else if (qParams[sortField] == SortingOpts.DESC) {
+            sorting = (a, b) => { return moment(a[qParamFormatted]).isBefore(b[qParamFormatted]) ? 1 : -1 };
+        }
+        if (sorting) {
+            resBody.sort(sorting);
+        }
+    }
+    return resBody;
+}
+
 const veiculosResDecorator = (opts) => {
     return (proxyRes, proxyResData, userReq, userRes) => {
         const data = proxyResData.toString('utf8');
@@ -157,57 +210,18 @@ const veiculosResDecorator = (opts) => {
             }
 
             if (opts) {
-                const inicioAnoFabricacaoRegex = /^inicioAnoFabricacao$/
-                const fimAnoFabricacaoRegex = /^fimAnoFabricacao$/
                 const sortFieldRegex = /^sortFieldDataLance$/;
-                const qParams = userReq.query;
+                const filterFields = Object.keys(userReq.query).filter(qParam => !qParam.match(sortFieldRegex));
+                const sortField = Object.keys(userReq.query).find(qParam => qParam.match(sortFieldRegex));
 
                 logger.info(`Proxy opts: ${JSON.stringify(opts)}`);
-                if (opts.filter === FilterOpts.BY_ID) {
-                    let veiculoId = extractVeiculoIdFromUrl(userReq);
-                    logger.info(`Filtering by id: ${veiculoId}`)
 
-                    resBody = resBody.find(veiculo => veiculo.id === veiculoId)
-                    if (!resBody) {
-                        throw ErrorCode.VEHICLE_NOT_FOUND;
-                    }
-                } else if (opts.filter === FilterOpts.QUERY_PARAM) {
-                    const filterFields = Object.keys(qParams).filter(qParam => !qParam.match(sortFieldRegex));
-                    if (filterFields) {
-                        logger.info(`Filtering by fields: ${filterFields}`);
-                        filterFields.forEach(qParam => {
-                            let filter;
-                            if (qParam.match(inicioAnoFabricacaoRegex) || qParam.match(fimAnoFabricacaoRegex)) {
-                                const qParamFormatted = qParam.replace(/(inicio|fim)(.)(.+)/, (g1, g2, g3, g4) => g3.toLowerCase() + g4)
-                                if (qParam.match(inicioAnoFabricacaoRegex)) {
-                                    filter = (veiculo => veiculo[qParamFormatted] >= qParams[qParam]);
-                                } else {
-                                    filter = (veiculo => veiculo[qParamFormatted] <= qParams[qParam]);
-                                }
-                            } else {
-                                filter = (veiculo => veiculo[qParam] == qParams[qParam]);
-                            }
-                            resBody = resBody.filter(filter);
-                        });
-                    }
+                if(opts.filter) {
+                    resBody = applyFilter(resBody, userReq, opts.filter, filterFields)
                 }
 
                 if (opts.sorting) {
-                    const sortField = Object.keys(qParams).find(qParam => qParam.match(sortFieldRegex));
-                    if (sortField) {
-                        logger.info(`Sorting by field: ${sortField}`);
-                        const qParamFormatted = sortField.replace(/(sortField)(.)(.+)/, (g1, g2, g3, g4) => g3.toLowerCase() + g4)
-                        let sorting;
-                        if (qParams[sortField] == SortingOpts.ASC) {
-                            sorting = (a, b) => { return moment(a[qParamFormatted]).isAfter(b[qParamFormatted]) ? 1 : -1 };
-                        } else if (qParams[sortField] == SortingOpts.DESC) {
-                            sorting = (a, b) => { return moment(a[qParamFormatted]).isBefore(b[qParamFormatted]) ? 1 : -1 };
-                        }
-                        if (sorting) {
-                            resBody.sort(sorting);
-                        }
-                    }
-
+                    resBody = applySorting(resBody, userReq, sortField)
                 }
             }
         }
