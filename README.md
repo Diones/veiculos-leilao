@@ -13,7 +13,7 @@ O objetivo do projeto é criar uma camada de abstração sobre uma API fora dos 
 4. Agora basta utilizar a collection do postman disponibilizada no diretório `postman_collection`.
 
 ### Postman Collection
-A collection https://github.com/Diones/veiculos-leilao/blob/main/postman_collection/VeiculosLeilao.postman_collection.json é constituída de 5 requests:
+A collection [VeiculosLeilao.postman_collection.json](https://github.com/Diones/veiculos-leilao/blob/main/postman_collection/VeiculosLeilao.postman_collection.json) é constituída de 5 requests:
 
 1. Cria um veículo utilizando `POST` e retorna status `201 - Created` com id do veículo no header `veiculo-id`;
 2. Altera dados do veículo utilizando `PUT` e retorna status `204 - No content`;
@@ -25,4 +25,4 @@ A collection https://github.com/Diones/veiculos-leilao/blob/main/postman_collect
 >_Chamadas com `POST` e `PUT` com corpo faltando campos retorna erro de campo obrigatório com status `400 - Bad request`_
 
 ### Swagger
-A documentação do contrato pode ser encontrada em https://github.com/Diones/veiculos-leilao/blob/main/openapi_doc/veiculos-leilao-openapi.yaml
+A documentação do contrato pode ser encontrada em [veiculos-leilao-openapi.yaml](https://github.com/Diones/veiculos-leilao/blob/main/openapi_doc/veiculos-leilao-openapi.yaml)
