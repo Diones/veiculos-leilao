@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "Criar lance",
+			"name": "Criar veículo",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -45,7 +45,7 @@
 			"response": []
 		},
 		{
-			"name": "Alterar lance",
+			"name": "Alterar veículo",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -70,7 +70,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/veiculos/555",
+					"raw": "http://localhost:3000/veiculos/764",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -78,14 +78,14 @@
 					"port": "3000",
 					"path": [
 						"veiculos",
-						"555"
+						"764"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Remover lance",
+			"name": "Remover veículo",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -101,7 +101,7 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/veiculos/1",
+					"raw": "http://localhost:3000/veiculos/765",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -109,14 +109,14 @@
 					"port": "3000",
 					"path": [
 						"veiculos",
-						"1"
+						"765"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Consultar lance com filtro e ordenação",
+			"name": "Consultar veículos com filtro e ordenação",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -132,7 +132,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/veiculos",
+					"raw": "http://localhost:3000/veiculos?sortFieldDataLance=asc&modelo=HIL",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -174,8 +174,7 @@
 						},
 						{
 							"key": "sortFieldDataLance",
-							"value": "asc",
-							"disabled": true
+							"value": "asc"
 						},
 						{
 							"key": "usuarioLance",
@@ -184,8 +183,7 @@
 						},
 						{
 							"key": "modelo",
-							"value": "HIL",
-							"disabled": true
+							"value": "HIL"
 						}
 					]
 				}
@@ -193,7 +191,7 @@
 			"response": []
 		},
 		{
-			"name": "Consultar lance por ID",
+			"name": "Consultar veículo por ID",
 			"event": [
 				{
 					"listen": "prerequest",

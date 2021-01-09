@@ -3,10 +3,10 @@ const { logger } = require('./logger');
 var moment = require('moment');
 
 const ErrorCode = {
+    REQUIRED_FIELD: { code: "400.001", message: "Required field not informed" },
     VEHICLE_NOT_FOUND: { code: "404.001", message: "Vehicle not found" },
     METHOD_NOT_SUPPORTED: { code: "405.001", message: "Method not supported" },
-    GENERIC_ERROR: { code: "422.001", message: "Contact Support" },
-    VEHICLE_ID_FOUND: { code: "422.002", message: "Vehicle id not found" }
+    GENERIC_ERROR: { code: "422.001", message: "Contact Support" }
 }
 
 const Operacao = {
@@ -27,9 +27,6 @@ const SortingOpts = {
 }
 
 const extractVeiculoIdFromUrl = (request) => {
-    if (!request.params.veiculoId) {
-        throw ErrorCode.VEHICLE_ID_FOUND;
-    }
     return parseInt(request.params.veiculoId);
 }
 
@@ -59,6 +56,8 @@ const handleVeiculoMsgErrors = (body) => {
     if (body.mensagem) {
         if (body.mensagem === 'nao encontrado') {
             throw ErrorCode.VEHICLE_NOT_FOUND;
+        } else if(body.mensagem === 'Campo nao encontrado') {
+            throw ErrorCode.REQUIRED_FIELD;
         } else if (body.mensagem !== "sucesso") {
             throw ErrorCode.GENERIC_ERROR;
         }
@@ -68,33 +67,28 @@ const handleVeiculoMsgErrors = (body) => {
 const parseVeiculoResponseBody = (body) => {
     let respBody = '';
     if (body) {
-        // Tratando mensagem de erro retornada em status code 200 :/
-        handleVeiculoMsgErrors(body);
-
-        if (!body.mensagem) {
-            // Lógica para transformar as datas vindas do GET.
-            // No método POST, aparentemente o servidor está apenas retornando o que é enviado, assim já vem formatado corretamente
-            const dateRegex = /([0-9]{2}\/){2}[0-9]{4} - [0-9]{2}:[0-9]{2}/
-            let dataLance;
-            if (body.DATALANCE) {
-                if (body.DATALANCE.match(dateRegex)) {
-                    dataLance = moment(body.DATALANCE, "DD/MM/YYYY - hh:mm").toISOString(true)
-                } else {
-                    dataLance = body.DATALANCE
-                }
+        // Lógica para transformar as datas vindas do GET.
+        // No método POST, aparentemente o servidor está apenas retornando o que é enviado, assim já vem formatado corretamente
+        const dateRegex = /([0-9]{2}\/){2}[0-9]{4} - [0-9]{2}:[0-9]{2}/
+        let dataLance;
+        if (body.DATALANCE) {
+            if (body.DATALANCE.match(dateRegex)) {
+                dataLance = moment(body.DATALANCE, "DD/MM/YYYY - hh:mm").toISOString(true)
+            } else {
+                dataLance = body.DATALANCE
             }
-            respBody = {
-                id: body.ID,
-                dataLance: dataLance,
-                lote: body.LOTE,
-                codigoControle: body.CODIGOCONTROLE,
-                marca: body.MARCA,
-                modelo: body.MODELO,
-                anoFabricacao: body.ANOFABRICACAO,
-                anoModelo: body.ANOMODELO,
-                valorLance: body.VALORLANCE,
-                usuarioLance: body.USUARIOLANCE
-            }
+        }
+        respBody = {
+            id: body.ID,
+            dataLance: dataLance,
+            lote: body.LOTE,
+            codigoControle: body.CODIGOCONTROLE,
+            marca: body.MARCA,
+            modelo: body.MODELO,
+            anoFabricacao: body.ANOFABRICACAO,
+            anoModelo: body.ANOMODELO,
+            valorLance: body.VALORLANCE,
+            usuarioLance: body.USUARIOLANCE
         }
     }
     return respBody;
@@ -221,13 +215,16 @@ const veiculosResDecorator = (opts) => {
 
         const data = proxyResData.toString('utf8');
         logger.info(`Response body: ${data} - status: ${proxyRes.statusCode}`)
-        
+
+        // Tratando mensagem de erro retornada em status code 200 :/
+        const json = JSON.parse(data);
+        handleVeiculoMsgErrors(json);
+
         if (userRes.statusCode === 201) {
-            const veiculo = parseVeiculoResponseBody(JSON.parse(data));
+            const veiculo = parseVeiculoResponseBody(json);
             userRes.header('veiculo-id', veiculo.id)
         } else if (userRes.statusCode === 200 && data.length) {
             if (proxyRes.statusCode >= 200 && proxyRes.statusCode < 400) {
-                const json = JSON.parse(data);
                 if (Array.isArray(json)) {
                     resBody = json.map(veiculo => parseVeiculoResponseBody(veiculo));
                 } else {

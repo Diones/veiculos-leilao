@@ -1,0 +1,289 @@
+openapi: 3.0.1
+info:
+  title: Veículos Leilão
+  description: >-
+    Manutenção de dados de veículos em sistema de leilão.
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:3000'
+tags:
+  - name: veiculos
+    description: Leilão de veículos
+paths:
+  /veiculos:
+    post:
+      tags:
+        - veiculos
+      summary: Criar novo veículo
+      operationId: addVehicle
+      requestBody:
+        description: Dados do veículo à ser adicionado
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Veiculo'
+        required: true
+      responses:
+        '201':
+          description: Operação realizada com sucesso
+          headers:
+            veiculo-id:
+              schema:
+                type: integer
+                format: int64
+              description: ID do veículo adicionado.
+        '400':
+          $ref: '#/components/responses/RequiredField'
+    get:
+      tags:
+        - veiculos
+      summary: Consultar veículos
+      description: Consultar veículos podendo adicionar filtros `CASE-SENSITIVE` em todos os campos e ordenação pelo campo `dataLance`. O campo `modelo` utiliza busca por iniciais, não sendo necessário informar o nome por completo.
+      operationId: findVehicles
+      parameters:
+        - name: dataLance
+          in: query
+          description: Filtra por data do lance
+          schema:
+            type: string
+            format: date-time 
+            example: '2020-08-21T10:10:00.000-03:00'
+        - name: lote
+          in: query
+          description: Filtra pelo lote
+          schema:
+            type: string
+            example: '0015'
+        - name: codigoControle
+          in: query
+          description: Filtra pelo código de controle
+          schema:
+            type: string 
+            example: '86301'
+        - name: marca
+          in: query
+          description: Filtra pela marca do veículo
+          schema:
+            type: string
+            example: 'TOYOTA'
+        - name: modelo
+          in: query
+          description: Filtra pelo modelo do veículo - procura pelas iniciais
+          schema:
+            type: string
+            example: 'HILUX'
+        - name: anoFabricacao
+          in: query
+          description: Filtra pelo ano de fabricação do veículo
+          schema:
+            type: integer
+            format: int64
+            example: 2010
+        - name: anoModelo
+          in: query
+          description: Filtra pelo ano do modelo do veículo
+          schema:
+            type: integer
+            format: int64
+            example: 2010
+        - name: valorLance
+          in: query
+          description: Filtra pelo valor do lance
+          schema:
+            type: integer
+            format: int64
+            example: 27600
+        - name: usuarioLance
+          in: query
+          description: Filtra por usuário do lance
+          schema:
+            type: string 
+            example: 'valvan2012'
+        - name: inicioAnoFabricacao
+          in: query
+          description: Filtra por ano de fabricação maior ou igual ao valor fornecido
+          schema:
+            type: integer
+            format: int64
+            example: 2010
+        - name: fimAnoFabricacao
+          in: query
+          description: Filtra por ano de fabricação menor ou igual ao valor fornecido
+          schema:
+            type: integer
+            format: int64
+            example: 2010
+        - name: sortFieldDataLance
+          in: query
+          description: Ordena resultado pelo campo `dataLance`
+          schema:
+            type: string
+            enum: [asc, desc]
+            example: desc
+      responses:
+        '200':
+          description: Operação realizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Veiculo'
+  /veiculos/{veiculoId}:
+    get:
+      tags:
+        - veiculos
+      summary: Buscar veículo
+      operationId: listVehicles
+      parameters:
+        - name: veiculoId
+          in: path
+          description: ID do veículo
+          required: true
+          example: 555
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Operação realizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Veiculo'
+        '404':
+          $ref: '#/components/responses/VehicleNotFound'
+    put:
+      tags:
+        - veiculos
+      summary: Alterar dados do veículo
+      operationId: updateVehicle
+      parameters:
+        - name: veiculoId
+          in: path
+          description: ID do veículo
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Dados do veículo à serem alterados
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Veiculo'
+        required: true
+      responses:
+        '204':
+          description: Veículo alterado
+        '404':
+          $ref: '#/components/responses/VehicleNotFound'
+    delete:
+      tags:
+        - veiculos
+      summary: Deletar veículo
+      operationId: deleteVehicle
+      parameters:
+        - name: veiculoId
+          in: path
+          description: ID do veículo
+          required: true
+          example: 555
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Veículo deletado
+        '404':
+          $ref: '#/components/responses/VehicleNotFound'
+components:
+  schemas:
+    Veiculo:
+      required:
+        - dataLance
+        - lote
+        - codigoControle
+        - marca
+        - modelo
+        - anoFabricacao
+        - anoModelo
+        - valorLance
+        - usuarioLance
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identificador único do veículo
+          example: 555
+        dataLance:
+          type: string
+          format: date-time
+          description: Data/hora que foi realizado o último lance
+          example: '2020-08-21T10:10:00.000-03:00'
+        lote:
+          type: string
+          description: Agrupador de um conjunto de veículos
+          example: '0196'
+        codigoControle:
+          type: string
+          description: Código único do veículo dentro do lote
+          example: '86301'
+        marca:
+          type: string
+          description: Marca do veículo
+          example: 'TOYOTA'
+        modelo:
+          type: string
+          description: Modelo do veículo
+          example: 'HILUX CD 4X4 SRV'
+        anoFabricacao:
+          type: integer
+          format: int64
+          description: Ano de fabricação do veículo
+          example: 2010
+        anoModelo:
+          type: integer
+          format: int64
+          description: Ano do modelo do veículo
+          example: 2011
+        valorLance:
+          type: integer
+          format: int64
+          description: Valor do último lance dado
+          example: 27600
+        usuarioLance:
+          type: string
+          description: Usuário cadastrado na plataforma que fez o último lance
+          example: 'devacar'
+    ApiErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: '404.001'
+        message:
+          type: string
+          example: 'Vehicle not found'
+  responses:
+    RequiredField:
+      description: Campo obrigatório não fornecido
+      content:
+        application/json:
+            schema:
+              $ref: '#/components/schemas/ApiErrorResponse'
+            example:
+              code: '400.001'
+              message: 'Required field not informed'
+    VehicleNotFound:
+      description: Veículo não encontrado
+      content:
+        application/json:
+            schema:
+              $ref: '#/components/schemas/ApiErrorResponse'
+            example:
+              code: '404.001'
+              message: 'Vehicle not found'
